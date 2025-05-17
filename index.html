@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Master</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6353327846921552"
+     crossorigin="anonymous"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1501555088652-021faa106b9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      color: #e2e8f0;
+    }
+    .game-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      padding: 1.5rem;
+      animation: fadeIn 1.2s ease-in-out;
+    }
+    .card {
+      perspective: 1200px;
+      transition: transform 0.4s ease, box-shadow 0.3s ease;
+      transform-style: preserve-3d;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    }
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      transform-style: preserve-3d;
+    }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    .card-front {
+      background: linear-gradient(135deg, #1e3a8a, #7dd3fc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+    .card-back {
+      transform: rotateY(180deg);
+      background: #ffffff;
+    }
+    .flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+    .matched {
+      animation: pulse 0.5s ease;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    button {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(to right, #22D3EE, #1E40AF);
+    }
+    button::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.5s ease;
+      border-radius: 50%;
+    }
+    button:hover::after {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    button:hover {
+      transform: translateY(-2px);
+    }
+    .text-gold-gradient {
+      background: linear-gradient(to right, #FFD700, #C0C0C0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .text-cyan {
+      color: #A5F3FC;
+    }
+    .text-white {
+      color: #FFFFFF;
+    }
+    .text-gold {
+      color: #FFD700;
+    }
+    /* Responsive Design */
+    @media (max-width: 640px) {
+      .game-container {
+        padding: 1rem;
+        margin: 0.5rem;
+      }
+      .card {
+        width: 70px;
+        height: 100px;
+      }
+      .grid {
+        gap: 8px;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      p {
+        font-size: 0.875rem;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+    }
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .game-container {
+        padding: 1.5rem;
+      }
+      .card {
+        width: 90px;
+        height: 135px;
+      }
+      .grid {
+        gap: 12px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      p {
+        font-size: 1rem;
+      }
+      button {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+      }
+    }
+    @media (min-width: 1025px) {
+      .game-container {
+        padding: 2rem;
+      }
+      .card {
+        width: 110px;
+        height: 165px;
+      }
+      .grid {
+        gap: 16px;
+      }
+      h1 {
+        font-size: 2.5rem;
+      }
+      p {
+        font-size: 1.125rem;
+      }
+      button {
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+  <div id="homepage" class="game-container max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl sm:text-5xl font-bold text-gold-gradient">Welcome to Memory Master</h1>
+      <p class="text-lg sm:text-xl mt-4 text-cyan">About the Game</p>
+      <p class="text-md sm:text-lg mt-2 text-white">
+        Memory Master is a fun and challenging memory card game that tests your ability to remember and match pairs of cards. 
+        With increasing difficulty levels, stunning visuals, and rewarding gameplay, it’s perfect for players of all ages!
+      </p>
+      <p class="text-lg sm:text-xl mt-4 text-cyan">How to Play</p>
+      <ul class="text-md sm:text-lg mt-2 text-white text-left max-w-md mx-auto">
+        <li>1. Click the "Start Game" button to begin.</li>
+        <li>2. Flip two cards at a time to find matching pairs.</li>
+        <li>3. Match all pairs to advance to the next level.</li>
+        <li>4. Earn points and rewards for each match, but watch your moves!</li>
+        <li>5. If you run out of moves or complete all levels, the game ends.</li>
+      </ul>
+      <button id="beginGameButton" class="mt-6 px-6 py-3 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-700 transition">Start Game</button>
+    </div>
+  </div>
+
+  <div id="gameScreen" class="game-container max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 hidden">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl sm:text-5xl font-bold text-gold-gradient">Memory Master</h1>
+      <p class="text-lg sm:text-xl mt-2">
+        <span class="text-cyan">Level:</span> <span id="level" class="text-white">1</span> | 
+        <span class="text-cyan">Score:</span> <span id="score" class="text-white">0</span> | 
+        <span class="text-cyan">Rewards:</span> <span id="rewards" class="text-white">0</span>
+      </p>
+      <p class="text-md sm:text-lg mt-2">
+        <span class="text-cyan">Difficulty:</span> <span id="difficulty" class="text-white">Easy</span>
+      </p>
+      <button id="startButton" class="mt-4 px-6 py-3 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-700 transition">Start Game</button>
+    </div>
+    <div id="gameBoard" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 max-w-4xl mx-auto"></div>
+    <div id="gameOver" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center">
+      <div class="bg-gray-800 p-8 rounded-lg text-center">
+        <h2 class="text-3xl font-bold mb-4 text-gold">Game Over!</h2>
+        <p class="text-xl mb-4">
+          <span class="text-cyan">Level:</span> <span id="finalLevel" class="text-white"></span> | 
+          <span class="text-cyan">Score:</span> <span id="finalScore" class="text-white"></span>
+        </p>
+        <p class="text-lg mb-4">
+          <span class="text-cyan">Rewards Earned:</span> <span id="finalRewards" class="text-white"></span>
+        </p>
+        <button id="restartButton" class="px-6 py-3 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-700 transition">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const homepage = document.getElementById('homepage');
+    const gameScreen = document.getElementById('gameScreen');
+    const beginGameButton = document.getElementById('beginGameButton');
+    const gameBoard = document.getElementById('gameBoard');
+    const startButton = document.getElementById('startButton');
+    const restartButton = document.getElementById('restartButton');
+    const levelDisplay = document.getElementById('level');
+    const scoreDisplay = document.getElementById('score');
+    const rewardsDisplay = document.getElementById('rewards');
+    const difficultyDisplay = document.getElementById('difficulty');
+    const gameOverScreen = document.getElementById('gameOver');
+    const finalLevel = document.getElementById('finalLevel');
+    const finalScore = document.getElementById('finalScore');
+    const finalRewards = document.getElementById('finalRewards');
+
+    let cards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let level = 1;
+    let score = 0;
+    let rewards = 0;
+    let moves = 0;
+    let maxMoves = 0;
+    let isGameActive = false;
+
+    const difficulties = {
+      easy: { pairs: 4, moves: 20, levels: 1 },
+      medium: { pairs: 6, moves: 30, levels: 11 },
+      hard: { pairs: 8, moves: 40, levels: 26 },
+      nightmare: { pairs: 10, moves: 50, levels: 61 }
+    };
+
+    function getDifficulty() {
+      if (level >= difficulties.nightmare.levels) return 'nightmare';
+      if (level >= difficulties.hard.levels) return 'hard';
+      if (level >= difficulties.medium.levels) return 'medium';
+      return 'easy';
+    }
+
+    function generateCardImages(pairs) {
+      const images = [];
+      for (let i = 1; i <= pairs; i++) {
+        const uniqueImage = `https://picsum.photos/200/300?random=${level * 100 + i}`;
+        images.push(uniqueImage, uniqueImage);
+      }
+      return images.sort(() => Math.random() - 0.5);
+    }
+
+    function createCard(image) {
+      const card = document.createElement('div');
+      card.className = 'card relative';
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="card-front flex items-center justify-center">
+            <span class="text-2xl font-bold text-white">?</span>
+          </div>
+          <div class="card-back">
+            <img src="${image}" alt="Card Image" class="w-full h-full object-cover">
+          </div>
+        </div>
+      `;
+      card.addEventListener('click', () => flipCard(card, image));
+      return card;
+    }
+
+    function setupGame() {
+      gameBoard.innerHTML = '';
+      cards = [];
+      flippedCards = [];
+      matchedPairs = 0;
+      moves = 0;
+      const difficulty = getDifficulty();
+      const { pairs, moves: maxMovesLimit } = difficulties[difficulty];
+      maxMoves = maxMovesLimit;
+      const images = generateCardImages(pairs);
+      images.forEach(image => {
+        const card = createCard(image);
+        gameBoard.appendChild(card);
+        cards.push(card);
+      });
+      levelDisplay.textContent = level;
+      scoreDisplay.textContent = score;
+      rewardsDisplay.textContent = rewards;
+      difficultyDisplay.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+      isGameActive = true;
+    }
+
+    function flipCard(card, image) {
+      if (!isGameActive || flippedCards.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      card.classList.add('flipped');
+      flippedCards.push({ card, image });
+      moves++;
+      if (flippedCards.length === 2) {
+        checkMatch();
+      }
+    }
+
+    function checkMatch() {
+      const [card1, card2] = flippedCards;
+      if (card1.image === card2.image) {
+        card1.card.classList.add('matched');
+        card2.card.classList.add('matched');
+        matchedPairs++;
+        score += 10;
+        rewards += Math.floor(Math.random() * 5) + 1;
+        scoreDisplay.textContent = score;
+        rewardsDisplay.textContent = rewards;
+        flippedCards = [];
+        if (matchedPairs === difficulties[getDifficulty()].pairs) {
+          if (level < 100) {
+            level++;
+            setTimeout(setupGame, 1000);
+          } else {
+            endGame();
+          }
+        }
+      } else {
+        isGameActive = false;
+        setTimeout(() => {
+          card1.card.classList.remove('flipped');
+          card2.card.classList.remove('flipped');
+          flippedCards = [];
+          isGameActive = true;
+        }, 1000);
+      }
+      if (moves >= maxMoves && matchedPairs < difficulties[getDifficulty()].pairs) {
+        endGame();
+      }
+    }
+
+    function endGame() {
+      isGameActive = false;
+      finalLevel.textContent = level;
+      finalScore.textContent = score;
+      finalRewards.textContent = rewards;
+      gameOverScreen.classList.remove('hidden');
+    }
+
+    beginGameButton.addEventListener('click', () => {
+      homepage.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+    });
+
+    startButton.addEventListener('click', () => {
+      startButton.classList.add('hidden');
+      setupGame();
+    });
+
+    restartButton.addEventListener('click', () => {
+      gameOverScreen.classList.add('hidden');
+      level = 1;
+      score = 0;
+      rewards = 0;
+      startButton.classList.remove('hidden');
+    });
+
+    // Preload background for smoother experience
+    const bgImage = new Image();
+    bgImage.src = 'https://images.unsplash.com/photo-1501555088652-021faa106b9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80';
+  </script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3076532301454519"
+  crossorigin="anonymous"></script>
+</body>
+</html>
